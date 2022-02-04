@@ -3,7 +3,7 @@
 **Author Name**: Raneem Oqaily
 
 ## WRRC
-![](wrrc.jpeg)
+![](wrrc13.jpeg)
 
 ## Overview
 setting up the server of the movie app .
@@ -12,10 +12,8 @@ setting up the server of the movie app .
 <!-- What are the steps that a user must take in order to build this app on their own machine and get it running? -->
 clone repository
 cd Movies_Library
-install npm 
-npm init -y
-npm i express 
-npm i cors
+npm i  
+build their own env variables in their .env file
 
 
 
@@ -38,10 +36,11 @@ localhost:7000/network
 
 
 What observations or questions do you have about what you’ve learned so far?
-1. How to install all pachage that needs to start building the server .
+1. How to install all packages that needs to start building the server .
 2. Get the idea abour wrrc and how the server deal with the reqests .
-
+3. after this task i had a full imagination web request response cycle and i can make queries to get and insert in the data base  
 
 
 How long did it take you to complete this assignment? And, before you started, how long did you think it would take you to complete this assignment?
+
 2 hours ,because i faced some problem with the installiation

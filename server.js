@@ -3,21 +3,27 @@ const express=require('express');
 const cors =require('cors');
 const axios =require('axios');
 const PORT=process.env.PORT;
-const server=express()
-server.use(cors())
+const server=express();
+const pg =require('pg');
+//create client with database url
+const client =new pg.Client(process.env.DATABASE_URL);
+
 
 // 5ccf75088cf2cb9dc0801bc19f16f285
 
 //saving our data.jason to (data)
-const mydata=require ('./data.json')
+const mydata=require ('./data.json');
+server.use(cors())
+server.use(express.json());
 
 server.get('/',handlerHomePage);
 server.get('/favorite',handlerFavouritPage);
-server.get('/searchmovie' ,searchHandler)
+server.get('/search' ,searchHandler)
 server.get('/trending' ,trendinghHandler)
 server.get('/translation',translationsHandler)
 server.get('/list',listMoviesHandler)
-
+server.post('/addMovie',addMovieHandler)
+server.get('/getMovies',handlerGetMovies)
 server.use('*',handlerNotFound); //client error ,path is not exist
 server.use(errorHandler); //server error
 
@@ -37,13 +43,12 @@ function Movie(id,title, release_date,poster_path,overview){
 }
 
 
-
 function searchHandler(req,res){
-    let  usersearch="spider";
+    // let usersearch=req.query.usersearch;
+let url=`https://api.themoviedb.org/3/search/movie?api_key=${process.env.APIKEY}&language=en-US&query=The&page=2`;
 
-let url=`https://api.themoviedb.org/3/search/movie?api_key=${process.env.APIKEY}$query=${usersearch}`;
-
-axios.get(url).then((data)=>{
+axios.get(url)
+.then((data)=>{
             // console.log(data.data.results)
 
 let movies=data.data.results.map(result=>{
@@ -52,23 +57,33 @@ let movies=data.data.results.map(result=>{
 })
 res.status(200).json(movies)
 
-}).catch(err=>{
+}).catch((err)=>{
     errorHandler(err,req,res)
 }
 
 )}
 
+function handlerGetMovies(req,res){
+let sql =`SELECT * FROM myMovie;`;
+client.query(sql).then(data=>{
+    res.status(200).json(data.rows)
+}
+    ).catch(error=>{
+        errorHandler(err,req,res)
+    })
+}
+
 
 function trendinghHandler(req,res){
     let url=`https://api.themoviedb.org/3/trending/movie/day?api_key=${process.env.APIKEY}`;
 
-    axios.get(url).then((data)=>{
+    axios.get(url).then(data=>{
         // console.log(data.data.results)
         let movies =data.data.results.map(result=>{
             return new Movie(result.id,result.title,result.release_date,result.poster_path,result.overview)
         })
         res.status(200).json(movies)
-    }).catch((err)=>{
+    }).catch(err=>{
         errorHandler(err,req,res)
     })
 
@@ -79,7 +94,7 @@ function listMoviesHandler(req,res){
     axios.get(url).then((data)=>{
         // console.log(data.data.results)
         let movies =data.data.results.map(result=>{
-            return new Movie(result.id,result.title,result.release_date,result.poster_path,result.overview)
+            return new Movie(result.id,result.title,0,result.poster_path,result.overview)
         })
         res.status(200).json(movies)
     }).catch((err)=>{
@@ -97,6 +112,7 @@ axios.get(url)
 .then((data)=>{
     console.log(data.data)
     let movies =data.data.translations.map(result=>{
+        console.log(result, "suraaa")
         return new Movie(result.id,result.title,result.release_date,result.poster_path,result.overview)
     })
     res.status(200).json(movies)
@@ -105,6 +121,21 @@ console.log(err)
     errorHandler(err,req,res)
 })
 }
+
+function addMovieHandler(req,res){
+    const movie=req.body;
+    let sql = 'INSERT INTO myMovie (title,release_date,poster_path,overview,comment) VALUES ($1,$2,$3,$4,$5) RETURNING *;'
+    let values=[movie.title,movie.release_date,movie.poster_path,movie.overview,movie.comment]
+    client.query(sql,values).then((data)=>{
+      res.status(200).json(data)
+    }).catch((error)=>{
+ 
+        errorHandler(error,req,res)
+    })
+}
+
+
+
 function handlerNotFound(req,res){
     return res.status(404).send("SORRY  THIS PAGE NOT FOUND")
 }
@@ -129,6 +160,9 @@ function errorHandler(error,req,res){
      res.status(500).send("Sorry, something went wrong")
 }
 
+
+client.connect().then(()=>{
 server.listen(PORT,()=>{
 console.log(`listining to ${PORT}`)
  })
+}) 
