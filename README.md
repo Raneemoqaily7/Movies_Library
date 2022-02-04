@@ -3,7 +3,7 @@
 **Author Name**: Raneem Oqaily
 
 ## WRRC
-![](wrrc13.jpeg)
+![](wrrc14.jpeg)
 
 ## Overview
 setting up the server of the movie app .
@@ -33,6 +33,15 @@ localhost:7000/review
 to get thenetwork page:
 
 localhost:7000/network
+
+to update request:
+localhost:7000/UPDATE/:id
+
+to delete request:
+localhost:7000/DELETE/:id
+
+get request to get a specific movie:
+localhost:7000/getMovie/:id
 
 
 What observations or questions do you have about what you’ve learned so far?
