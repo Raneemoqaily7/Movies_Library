@@ -13,17 +13,24 @@ const client =new pg.Client(process.env.DATABASE_URL);
 
 //saving our data.jason to (data)
 const mydata=require ('./data.json');
+const res = require('express/lib/response');
 server.use(cors())
 server.use(express.json());
 
 server.get('/',handlerHomePage);
 server.get('/favorite',handlerFavouritPage);
 server.get('/search' ,searchHandler)
+
 server.get('/trending' ,trendinghHandler)
 server.get('/translation',translationsHandler)
 server.get('/list',listMoviesHandler)
 server.post('/addMovie',addMovieHandler)
+
 server.get('/getMovies',handlerGetMovies)
+server.put('/UPDATE/:id',handlerupdateMovie)
+server.delete('/DELETE/:id',handlerDeleteMovie)
+server.get('/getMovie/:id',handlerGetMovieID);
+
 server.use('*',handlerNotFound); //client error ,path is not exist
 server.use(errorHandler); //server error
 
@@ -34,12 +41,13 @@ this.poster_path=poster_path;
 this.overview=overview
 }
 
-function Movie(id,title, release_date,poster_path,overview){
+function Movie(id,title, release_date,poster_path,overview,comment){
     this.id=id;
     this.title=title;
     this.release_date=release_date;
     this.poster_path=poster_path;
-    this.overview=overview
+    this.overview=overview;
+    this.comment=comment
 }
 
 
@@ -106,7 +114,7 @@ function listMoviesHandler(req,res){
 
 
 function translationsHandler(req,res) {
-    console.log("raneem")
+    // console.log("raneem")
 let url=`https://api.themoviedb.org/3/movie/644495/translations?api_key=${process.env.APIKEY}`;
 axios.get(url)
 .then((data)=>{
@@ -134,7 +142,44 @@ function addMovieHandler(req,res){
     })
 }
 
+function handlerupdateMovie(req,res){
+    const id=req.params.id;
+    const movie=req.body;
+    const sql=`UPDATE myMovie SET title=$1, release_date=$2,poster_path=$3,overview=$4,comment=$5,WHERE id=$6 RETURNING *;`
+    let values=[movie.title,movie.release_date,movie.poster_path,movie.overview,movie.comment,id]
+    client.query(sql,values).then(data=>{
+        res.status(200).json(data.rows)
 
+    }).catch((error)=>{
+ 
+        errorHandler(error,req,res)
+    })
+
+}
+
+function handlerDeleteMovie(req,res){
+    const id =req.params.id;
+    const sql=`DELETE FROM myMovie WHERE id=${id};`
+    client.query(sql).then(()=>{
+        res.status(200).send("MOVIE HAS DELETED");
+    }).catch((error)=>{
+ 
+    errorHandler(error,req,res)
+    })
+
+}
+
+function  handlerGetMovieID(req,res){
+    const id =req.params.id;
+    let sql =`SELECT * FROM myMovie WHERE id=${id};`;
+    client.query(sql).then(data=>{
+        res.status(200).json(data.rows)
+    }
+        ).catch(error=>{
+            errorHandler(err,req,res)
+        })
+    }
+    
 
 function handlerNotFound(req,res){
     return res.status(404).send("SORRY  THIS PAGE NOT FOUND")
