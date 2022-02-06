@@ -55,8 +55,9 @@ function Movie(id,title, release_date,poster_path,overview,comment){
 
 
 function searchHandler(req,res){
-    // let usersearch=req.query.usersearch;
-let url=`https://api.themoviedb.org/3/search/movie?api_key=${process.env.APIKEY}&language=en-US&query=The&page=2`;
+    let usersearch=req.query.usersearch;
+    console.log(usersearch)
+let url=`https://api.themoviedb.org/3/search/movie?api_key=${process.env.APIKEY}&language=en-US&query=${usersearch}&page=1`;
 
 axios.get(url)
 .then((data)=>{
@@ -117,8 +118,10 @@ function listMoviesHandler(req,res){
 
 
 function translationsHandler(req,res) {
-    // console.log("raneem")
-let url=`https://api.themoviedb.org/3/movie/644495/translations?api_key=${process.env.APIKEY}`;
+
+    const id=req.params.id;
+
+let url=`https://api.themoviedb.org/3/movie/${id}/translations?api_key=${process.env.APIKEY}`;
 axios.get(url)
 .then((data)=>{
     console.log(data.data)
@@ -148,7 +151,7 @@ function addMovieHandler(req,res){
 function handlerupdateMovie(req,res){
     const id=req.params.id;
     const movie=req.body;
-    const sql=`UPDATE myMovie SET title=$1, release_date=$2,poster_path=$3,overview=$4,comment=$5,WHERE id=$6 RETURNING *;`
+    const sql=`UPDATE myMovie SET title=$1, release_date=$2,poster_path=$3,overview=$4,comment=$5,WHERE id=${id} RETURNING *;`
     let values=[movie.title,movie.release_date,movie.poster_path,movie.overview,movie.comment,id]
     client.query(sql,values).then(data=>{
         res.status(200).json(data.rows)
@@ -209,8 +212,8 @@ function errorHandler(error,req,res){
 }
 
 
-client.connect().then(()=>{
+// client.connect().then(()=>{
 server.listen(PORT,()=>{
 console.log(`listining to ${PORT}`)
  })
-}) 
+// }) 
