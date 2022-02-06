@@ -6,8 +6,11 @@ const PORT=process.env.PORT;
 const server=express();
 const pg =require('pg');
 //create client with database url
-const client =new pg.Client(process.env.DATABASE_URL);
-
+// const client =new pg.Client(process.env.DATABASE_URL);
+const client = new pg.Client({
+    connectionString: process.env.DATABASE_URL,
+    ssl: { rejectUnauthorized: false }
+})
 
 // 5ccf75088cf2cb9dc0801bc19f16f285
 
