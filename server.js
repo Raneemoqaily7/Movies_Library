@@ -8,6 +8,7 @@ const pg =require('pg');
 //create client with database url
 // const client =new pg.Client(process.env.DATABASE_URL);
 const client = new pg.Client({
+
     connectionString: process.env.DATABASE_URL,
     ssl: { rejectUnauthorized: false }
 })
@@ -17,7 +18,7 @@ const client = new pg.Client({
 //saving our data.jason to (data)
 const mydata=require ('./data.json');
 
-server.use(cors())
+server.use(cors());
 server.use(express.json());
 
 server.get('/',handlerHomePage);
