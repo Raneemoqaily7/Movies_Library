@@ -16,7 +16,7 @@ const client = new pg.Client({
 
 //saving our data.jason to (data)
 const mydata=require ('./data.json');
-const res = require('express/lib/response');
+
 server.use(cors())
 server.use(express.json());
 
@@ -141,7 +141,7 @@ function addMovieHandler(req,res){
     let sql = 'INSERT INTO myMovie (title,release_date,poster_path,overview,comment) VALUES ($1,$2,$3,$4,$5) RETURNING *;'
     let values=[movie.title,movie.release_date,movie.poster_path,movie.overview,movie.comment]
     client.query(sql,values).then((data)=>{
-      res.status(200).json(data)
+      res.status(200).json(data.rows)
     }).catch((error)=>{
  
         errorHandler(error,req,res)
@@ -151,7 +151,7 @@ function addMovieHandler(req,res){
 function handlerupdateMovie(req,res){
     const id=req.params.id;
     const movie=req.body;
-    const sql=`UPDATE myMovie SET title=$1, release_date=$2,poster_path=$3,overview=$4,comment=$5,WHERE id=${id} RETURNING *;`
+    const sql=`UPDATE myMovie SET title=$1, release_date=$2,poster_path=$3,overview=$4,comment=$5 WHERE id=$6 RETURNING *;`
     let values=[movie.title,movie.release_date,movie.poster_path,movie.overview,movie.comment,id]
     client.query(sql,values).then(data=>{
         res.status(200).json(data.rows)
@@ -166,6 +166,7 @@ function handlerupdateMovie(req,res){
 function handlerDeleteMovie(req,res){
     const id =req.params.id;
     const sql=`DELETE FROM myMovie WHERE id=${id};`
+    // const values=[id]
     client.query(sql).then(()=>{
         res.status(200).send("MOVIE HAS DELETED");
     }).catch((error)=>{
@@ -212,8 +213,8 @@ function errorHandler(error,req,res){
 }
 
 
-// client.connect().then(()=>{
+client.connect().then(()=>{
 server.listen(PORT,()=>{
 console.log(`listining to ${PORT}`)
  })
-// }) 
+}) 
